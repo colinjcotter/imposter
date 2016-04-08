@@ -4,7 +4,7 @@
 \usepackage{layout}
 \usepackage{amsmath}
 \title{Compatible finite element methods for geophysical fluid dynamics}
-\author{Colin J. Cotter}
+\author{Colin J. Cotter, David A. Ham, Jemma Shipton, Lawrence Mitchell, Andrew T.T. McRae}
 \department{Department of Mathematics}
 \institution{Imperial College London}
 \email{colin.cotter@imperial.ac.uk}
@@ -18,6 +18,13 @@
 \logo{imperial.eps}
 % Secondary logos (not supported in all poster styles)
 \logoa{}
+
+\newenvironment{packed_enum}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
 
 %% Options to set colors of multiple poster features.
 %\titlecolor{named}{Blue}
@@ -36,7 +43,7 @@
 \group{The Gung Ho Project}
 % Use group with amcgstyle to specify a project name other than Imperial
 % College Ocean Model.
-\project{{Firedrake http://firedrakeproject.org}}
+\project{{Firedrake: http://firedrakeproject.org}}
 
 % This defines the command \showgrid. Use this to get a background grid to
 % your poster text area. This helps when positioning poster contents with
@@ -52,62 +59,60 @@
 \begin{multicols*}{3}
 \section{Introduction}
 Compatible finite elements form the basis of the Gung Ho dynamical
-core formulation, since they extend C-grid staggering to consistent
-schemes on pseudo-uniform meshes that avoid the parallel computation
-bottleneck caused by the poles in a latitude-longitude grid. They are
-also very suitable for multiresolution meshes for seamless
-basin-to-coast ocean modelling.
+core formulation, extending C-grid staggering to pseudo-uniform meshes
+that avoid the communication bottleneck caused by the poles in
+a lat-long grid. They are also very suitable for
+multiresolution meshes for seamless ocean modelling.
 
 \section{What are compatible finite elements useful for?}
-
-Compatible finite elements \cite{cotter2012mixed} reproduce the
-following essential properties of the C-grid staggering when applied
-to the linear shallow water equations on the $f$-plane:
+Same properties as C-grid \cite{cotter2012mixed}:
+\vspace{-1cm}
 \begin{multicols}{2}
-\begin{enumerate}
+\begin{packed_enum}
 \item No spurious pressure modes,
 \item No spurious inertial oscillations,
 \item Steady geostrophic modes,
 \item Conservation of linear energy.
-\end{enumerate}
+\end{packed_enum}
 \end{multicols}
-In addition, compatible finite elements have the following advantages:
-\begin{enumerate}
+\vspace{-0.5cm}
+Plus:
+\begin{packed_enum}
 \item No orthogonality requirements on meshes; can use triangles or
-  quadrilaterals (or combination).
+  quadrilaterals.
 \item Consistent discretisation of Coriolis, and higher-order options.
-\item Flexibility to avoid spurious C-grid type inertia-gravity modes on triangles \cite{danilov2010utility}
-  by selecting velocity/pressure degree of freedom ratio.
-\end{enumerate}
-This makes compatible finite element methods an attractive option for
-seamless ocean modelling on multiresolution unstructured meshes.
+\item Flexibility to avoid spurious C-grid inertia-gravity modes on triangles \cite{danilov2010utility}.
+\end{packed_enum}
+\vspace{-1cm}
+%This makes compatible finite element methods an attractive option for
+%seamless ocean modelling on multiresolution unstructured meshes.
 
 \section{What are compatible finite element methods?}
 
 Sets/spaces of finite element functions are defined by:
-\begin{enumerate}
+\begin{packed_enum}
 \item The choice of polynomials used in each cell (e.g., linear,
   quadratic, etc.),
 \item The continuity constraints on the functions between neighbouring
   cells.
-\end{enumerate}
+\end{packed_enum}
 In the compatible finite element framework, we choose:
-\begin{enumerate}
+\begin{packed_enum}
   \item Continuity in normal component for velocity space $V_1$.
   \item Discontinuous functions for pressure space $V_2$.
-\end{enumerate}
-In addition we require that $\MM{u}\in V_1 \implies
-\nabla\cdot\MM{u}\in V_2$, plus the existence of bounded operators
-$\pi_1$, $\pi_2$ such that the following diagram commutes:
-\begin{equation}
+    \item $\MM{u}\in V_1 \implies
+\nabla\cdot\MM{u}\in V_2$.
+\end{packed_enum}
+\vspace{-0.5cm}
+\begin{equation*}
   \begin{CD}
 H({\rm div})     @>\nabla\cdot >>  L^2 \\
 @VV\pi_1V        @VV\pi_2 V\\
 V_1     @>\nabla\cdot>>  V_2
 \end{CD}
-\end{equation}
-The following examples all avoid spurious inertia-gravity modes.\vspace{1cm}
-\\
+\end{equation*}
+\vspace{-1cm}
+\section{Compatible spaces for rotating shallow water}
 \parbox{25cm}{\hrule height 0pt width 0pt
   {\bfseries RT0-DG0 on quads.}
 RT0: In reference element, $x$-component is linear in $x$, constant in
@@ -140,14 +145,62 @@ to higher-order: BDMk-DG(k-1).}
     Linear functions.}
 \hspace{1cm}
 \parbox{25cm}{\hrule height 0pt width 0pt
-\includegraphics{BDFM1_DOFS}}\\
-%Steady geostrophic modes
+  \includegraphics{BDFM1_DOFS}}
 
-%Energy enstrophy conservation
+\section{Energy-enstrophy conserving discretisations for the nonlinear shallow water
+  equations on the sphere}
 
-%Vertical discretisation
+Continuous finite element space $V_0$, with
+$\psi \in V_0 \implies \nabla^\perp\psi \in V_1$, \cite{mcrae2014energy}
+leads to 
+energy-enstrophy conserving and energy conserving/enstrophy dissipating discretisations.
+\\ \vspace{1cm}
+%\includegraphics[width=15cm]{enenserrors}
+  \raisebox{5cm}{\parbox{22cm}{
+    \includegraphics[width=9cm]{uq_20_2}
+    \includegraphics[width=9cm]{uq_30_2}\\
+    \includegraphics[width=9cm]{uq_40_2}
+    \includegraphics[width=9cm]{uq_50_2}}}
+  \hspace{-3cm}
+  \raisebox{5cm}{\parbox{22cm}{
+    \includegraphics[width=17cm]{2.eps}\\
+    \includegraphics[width=17cm]{4.eps}
+    }}
 
-%limiters
+  \section{3D discretisations: Hexahedral/prismatic elements formed from tensor products
+  \cite{tensor2016}}
+\centerline{\raisebox{1.8cm}{\bfseries Density space:} \hspace{1cm}
+\includegraphics[width=4cm]{l2_tri} 
+\raisebox{1cm}{\Large $\otimes$}
+\raisebox{0.0cm}{\includegraphics[width=4cm,angle=90]{l2_int}} \raisebox{0.4cm}{\Large $=$}
+\includegraphics[width=3.2cm]{l2l2_prism}}
+\centerline{\raisebox{1.8cm}{\bfseries Horizontal part of velocity space:}\hspace{1cm}
+\includegraphics[width=4cm]{hdiv_tri} 
+ \raisebox{1cm}{\Large $\otimes$}
+\raisebox{0.0cm}{\includegraphics[width=4cm,angle=90]{l2_int}} 
+ \raisebox{1.2cm}{\Large $=$}
+ \raisebox{0.4cm}{\includegraphics[width=3.2cm]{hdiv_h_prism}}}
+\centerline{\raisebox{1.8cm}{\bfseries Vertical part of velocity space:}\hspace{1cm}
+\includegraphics[width=4cm]{l2_tri} 
+ \raisebox{1cm}{\Large $\otimes$}
+ \raisebox{0.0cm}{\includegraphics[width=4cm,angle=90]{h1_int}} 
+ \raisebox{1.2cm}{\Large $=$}
+ \raisebox{1mm}{\includegraphics[width=3.2cm]{hdiv_v_prism}}}
+\centerline{\raisebox{1.8cm}{\bfseries Temperature space:}\hspace{1cm}
+\includegraphics[width=4cm]{l2_tri} 
+ \raisebox{1cm}{\Large $\otimes$}
+ \raisebox{0.0cm}{\includegraphics[width=4cm,angle=90]{h1_int}} 
+ \raisebox{1.2cm}{\Large $=$}
+ \raisebox{1mm}{\includegraphics[width=3.2cm]{l2h1_prism}}}
+ \section{Vertical slice tests}
+  \centerline{
+    \includegraphics[width=25cm]{gw_nh}
+    }\centerline{
+    \includegraphics[width=25cm]{dc_filled}
+}
+
+  \section{Parallel scaling tests}
+  \centerline{\includegraphics[width=25cm]{gmres-preonlyS-ref6-layers40}}
 \small
 \bibliography{seamlessocean}
 \end{multicols*}
